@@ -14,9 +14,9 @@ const userRoutes = require('./api/routes/user');
 //Makking Data Base Connection Also
 mongoose.connect('mongodb+srv://testuser:'+process.env.MONGO_ATLAS_PASS+'@cluster0.xn4zx.mongodb.net/?retryWrites=true&w=majority').
 then(result=>{
-    console.log("Connected With DataBase!");
+    console.log("Connected With DataBase!💾");
 }).catch(err=>{
-    console.log(err,"Not Able To Connect!");
+    console.log(err,"Not Able To Connect!🛑");
 })
 
 app.use(morgan('dev'));

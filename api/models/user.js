@@ -11,6 +11,7 @@ const userSchema = mongoose.Schema({
     phoneNum : { type : Number , required : true},
     address : {type : Map ,of : String, required : true},
     desc : { type : String, required : true},
+    profilePicInfo : { type : Map, of : String, required: true},
     email : { type : String, required : true},
     pass : { type :  String , required : true}
 });
