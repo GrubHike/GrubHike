@@ -4,10 +4,20 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
 const multer = require('multer');
+const jwt = require('jsonwebtoken');
+
+//Now importing these so that we can able to delete the unnecssary data from the server
+const util = require('util');
+const unlinkFile = util.promisify(fs.unlinkSync);
+
+require('dotenv').config({path : './.env'})
+
 
 //Importing the S3 functions
-const { uploadFile } = require('../functions/s3');
+const { uploadFile,getFileStream } = require('../functions/s3');
 
+//Importing the middleware for the token authentication
+const checkToken = require('../middleware/checkAuth');
 
 const storage = multer.diskStorage({
     destination: function(req,file,cb){
@@ -18,7 +28,7 @@ const storage = multer.diskStorage({
     },
     filename: function(req,file,cb)
     {
-        cb(null,new Date().toISOString().replace(/:/g, '-') +'-'+file.originalname);
+        cb(null,new Date().toISOString().replace(/:/g, '-')+"_"+(Math.random() + 1).toString(36).substring(7)+'_'+file.originalname);
     }
 })
 
@@ -35,69 +45,289 @@ async function uploadToS3(file,res)
     {
         res.status(400).json({
             status: false,
-            message: err
+            message : "Error Caused In Uploading!"
         })
     }
 } 
 
 //Importing the Model of the User
 const User = require('../models/user');
+const user = require('../models/user');
 
-router.post('/signup',upload.single('profileImage'),async (req,res,next)=>{
-     console.log(req.file);
-     console.log(req.body.firstName);
-    uploadToS3(req.file,res)
-    .then(data=>{
-        console.log(data)
+router.post('/signup',async(req,res,next)=>{
+
+    //First Validating Uniquness According To --> Username, email ,phonenum
+    const email = req.body.email;
+    const phoneNum = req.body.phoneNum;
+
+    try {
+        const emailExists = await User.findOne({ email });
+        const phoneNumExists = await User.findOne({ phoneNum });
+        
+        if(emailExists && phoneNumExists) {
+           return res.status(409).json({
+
+            //409--conflict or 422 -- Unproccessable
+                status : "false",
+                message : "Email and PhoneNum Already Exists !"
+            })
+            throw new Error("Username and email already exists");
+        }else if(emailExists) {
+          return  res.status(409).json({
+                status : "false",
+                message : "Email Already Exists !"
+            });
+            throw new Error("Email already exists");
+        } else if(phoneNumExists)
+        {
+          return  res.status(409).json({
+                status : "false",
+                message : "PhoneNum Already Exists !"
+            });
+            throw new Error("PhoneNum Already exists");
+        }
+    } catch(error) {
+        console.error(error);
+    }
+
+    bcrypt.hash(req.body.password, 10,(err,hash)=>{
+        if(err)
+        {
+            return res.status(500).json({
+                status : false,
+                message : "Give Perfect Password!"
+            });
+        }
+        else {
+           const user = new User({
+               _id : new mongoose.Types.ObjectId(),
+               firstName : req.body.firstName,
+               lastName :  req.body.lastName,
+               gender : req.body.gender,
+               dob : req.body.dob,
+               phoneNum : phoneNum,
+               email : email,
+               pass : hash,
+            });
+    
+
+            user.save().then( result => {
+               console.log(result); 
+               res.status(201).json({
+                    status: true,
+                    message : "user created 🎉🎉",
+    })}).catch(err => {
+        res.status(500).json({
+            status : false,
+            message : "Some Error Caused",
+            error : err
+        })
+    })
+}})
+
+});
+
+
+router.put('/update/:userId', checkToken ,upload.single('profileImage'),async (req,res,next)=>{
+    console.log(req.file); 
+
+     const id = req.params.userId;
+     console.log(id);
+    
+     //Checking That User Wants to Upload the Pic or Not
+     if(req.file)
+     {
+ //Then if yes then upload to s3
+        uploadToS3(req.file,res)
+    .then(data=>{   
+        //Now finding the complete detail of particular user by the given id and also updating with new fields
+        User.findOneAndUpdate({_id:id},{
+            $set : {
+               hobbies : JSON.parse(req.body.hobbies),
+               socialHandles : JSON.parse(req.body.socialHandles),
+               profilePicInfo : { "fileKey" :  data.key,"fileLocation" : data.Location,"bucketName" : data.Bucket },
+               desc : req.body.desc,
+               address : JSON.parse(req.body.address),
+
+            }
+        }).exec().then(
+            //Once the after the Successfully done with uploads we also need to delete the uploa
+            //dir from the server becox its taking uncessary space
+            unlinkFile(req.file.path).then(
+                
+                //If Updated Successfully then trying to get new updated data
+            User.findOne({_id:id}).exec().then(
+                result=>{
+                    res.status(200).json({
+                        status: true,
+                        message : "User Profile Updated!",
+                        data : result
+                    })}
+            ).catch(err=>{
+                res.status(500).json(
+                    {
+                        status : false,
+                        message : "Some Error Caused During Fetching New Data",
+                        error : err
+                    }
+                )
+            })).catch(err=>{
+                res.status(500).json({
+                    status: false,
+                    message : "Error in unlinking the File From the Server!",
+                    error :  err
+                })
+            })
+
+
+            
+            
+        ).catch(err => {
+            res.status(400).json({
+                status : false,
+                message : "Might be User Is Not Present! Or You Have Not Given Complete Info",
+                error : err
+            })
+        })
+
     }).catch(
         err=>{
-            res.status(400).json({
+            res.status(500).json({
                 status : false,
                 message : "Not Able to Upload the Profile Pic!",
                 errr : err
             })
         });
-    //   bcrypt.hash(req.body.password, 10,(err,hash)=>{
-    //          if(err)
-    //          {
-    //              return res.status(500).json({
-    //                  erre : "at line 14",
-    //                  error : err
-    //              });
-    //          }
-    //          else {
-    //             const user = new User({
-    //                 _id : new mongoose.Types.ObjectId(),
-    //                 firstName : req.body.firstName,
-    //                 lastName :  req.body.lastName,
-    //                 gender : req.body.gender,
-    //                 age : req.body.age,
-    //                 socialHandles : req.body.socialHandles,
-    //                 hobbies : req.body.hobbies,
-    //                 phoneNum : req.body.phoneNum,
-    //                 address : req.body.address,
-    //                 desc : req.body.desc,
-    //                 fileInfo : { "fileKey" :  fileInfo.key,"fileLocation" : fileInfo.Location,"bucketName" : fileInfo.Bucket },
-    //                 email : req.body.email,
-    //                 pass : hash,
-    //              });
 
-    //              user.save().then( result => {
-    //                 console.log(result); 
-    //                 res.status(201).json({
-    //                      status: true,
-    //                      message : "user created 🎉🎉"
-    //               }) }
-    //              ).catch(
-    //                  err => {
-    //                      console.log(err);
-    //                      res.status(500).json({
-    //                         status : false, 
-    //                         error : err
-    //                      });
-    //                  }
-    //              );
-    //             }
-    //          })
-         })
+     }
+
+     else{
+        User.findOneAndUpdate({_id:id},{
+            $set : {
+               hobbies : JSON.parse(req.body.hobbies),
+               socialHandles : JSON.parse(req.body.socialHandles),
+               desc : req.body.desc,
+               address : JSON.parse(req.body.address),
+
+            }
+        }).exec().then(
+            //If Updated Successfully then trying to get new updated data
+            User.findOne({_id:id}).select("-pass").exec().then(
+                result=>{
+                    res.status(200).json({
+                        status: true,
+                        message : "User Profile Updated!",
+                        data : result
+                    })}
+            ).catch(err=>{
+                res.status(500).json(
+                    {
+                        status : false,
+                        message : "Some Error Caused During Fetching New Data",
+                        error : err
+                    }
+                )
+            })
+            
+        ).catch(err => {
+            res.status(400).json({
+                status : false,
+                message : "Might be User Is Not Present! Or You Have Not Given Complete Info",
+                error : err
+            })
+        })
+     }
+    });
+
+//Lets Make an Get Request to get the image
+router.get('/image/:key',(req,res)=>{
+    const key= req.params.key;
+    const readStream = getFileStream(key);
+
+    readStream.pipe(res);
+})
+    
+
+//LogIN
+router.post('/login',(req,res,next)=>{
+    User.find({email: req.body.email})
+    .exec()
+    .then(user=>{
+        if(user.length<1){
+            return res.status(401).json({
+                message: 'Authentication Failed! At length'
+            })
+        }
+        //if everything perfect
+        bcrypt.compare(req.body.password,user[0].pass,(err,result)=>{
+            if(err)
+            {
+                return res.status(401).json({
+                    message: 'Authentication Failed! At pass'
+                })
+            }
+            if(result)
+            {
+                const token = jwt.sign(
+                    {
+                        _id : user[0]._id,
+                        email : user[0].email
+                    },
+                 //Now, we need to provide the key
+                 process.env.JWT_KEY,
+                 {
+                     //Now provide other options like expire in
+                     expiresIn : "1h"
+                 }
+
+                );
+
+                return res.status(200).json({
+                    status : true,
+                    message : "Authenctication Successfull!",
+                    token : token
+                })
+            }
+            return res.status(401).json({
+                message: 'Authentication Failed! At Nothing'
+            })
+        })
+
+    })
+    .catch(
+        err=>{
+            res.status(500).json({
+                
+            })
+        }
+    )
+})
+
+//Get the UserDetail
+router.get('/:uid',checkToken,(req,res,next)=>
+{
+    const _id = req.params.uid;
+    console.log(_id);
+
+    User.findOne({_id: _id}).select('-pass')
+    .exec()
+    .then(
+       user => {
+            console.log(user);
+            res.status(200).json({
+                status : true,
+                message : "Got the User!",
+                data : user
+            })
+         }
+    ).catch(err => {
+        res.status(404).json({
+                    status : false,
+                    message : "Not Found",
+                    error : err
+    })
+})
+
+})
+
 module.exports = router;

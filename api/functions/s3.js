@@ -33,3 +33,16 @@ function uploadFile(file){
 }
 
 exports.uploadFile = uploadFile
+
+//Lets Try to get the Image from the S3 bucket
+const getFileStream = (fileKey) => 
+{
+    const downloadParams = {
+        Key : fileKey,
+        Bucket: bucketName
+    }
+
+    return S3.getObject(downloadParams).createReadStream()
+}
+
+exports.getFileStream = getFileStream;

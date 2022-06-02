@@ -42,7 +42,7 @@ app.get('/',(req,res,next)=>{
         message : "Server Started Working!"
     })});
 
-app.use('/user',userRoutes);
+app.use('/guest',userRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not found');
