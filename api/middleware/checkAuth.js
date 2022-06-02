@@ -5,7 +5,7 @@ module.exports = (req,res, next) => {
    try{
        //getting the token in header as you know this concept also used with get request
        const token = req.headers.authorization.split(" ")[1];
-       console.log(token);
+       //console.log(token);
        const decoded = jwt.verify(token,process.env.JWT_KEY);
        req.userData = decoded;
 
