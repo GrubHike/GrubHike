@@ -59,35 +59,32 @@ router.post('/signup',async(req,res,next)=>{
     //First Validating Uniquness According To --> Username, email ,phonenum
     const email = req.body.email;
     const phoneNum = req.body.phoneNum;
-
+    let error;
     try {
         const emailExists = await User.findOne({ email });
         const phoneNumExists = await User.findOne({ phoneNum });
         
         if(emailExists && phoneNumExists) {
-           return res.status(409).json({
-
-            //409--conflict or 422 -- Unproccessable
-                status : "false",
-                message : "Email and PhoneNum Already Exists !"
-            })
+            error = "Username and email already exists";
             throw new Error("Username and email already exists");
         }else if(emailExists) {
-          return  res.status(409).json({
-                status : "false",
-                message : "Email Already Exists !"
-            });
+            error = "Email already exists";
             throw new Error("Email already exists");
         } else if(phoneNumExists)
         {
-          return  res.status(409).json({
-                status : "false",
-                message : "PhoneNum Already Exists !"
-            });
+            error = "PhoneNum Already exists";
             throw new Error("PhoneNum Already exists");
         }
-    } catch(error) {
-        console.error(error);
+    } catch(err) {
+        //console.error(err);
+        // const message = err;
+                
+        return res.status(409).json({
+
+            //409--conflict or 422 -- Unproccessable
+                status : "false",
+                error : error
+            })
     }
 
     bcrypt.hash(req.body.password, 10,(err,hash)=>{
@@ -112,7 +109,7 @@ router.post('/signup',async(req,res,next)=>{
     
 
             user.save().then( result => {
-               console.log(result); 
+               //console.log(result); 
                res.status(201).json({
                     status: true,
                     message : "user created 🎉🎉",
@@ -129,10 +126,10 @@ router.post('/signup',async(req,res,next)=>{
 
 
 router.put('/update/:userId', checkToken ,upload.single('profileImage'),async (req,res,next)=>{
-    console.log(req.file); 
+    //console.log(req.file); 
 
      const id = req.params.userId;
-     console.log(id);
+     //console.log(id);
     
      //Checking That User Wants to Upload the Pic or Not
      if(req.file)
@@ -307,13 +304,13 @@ router.post('/login',(req,res,next)=>{
 router.get('/:uid',checkToken,(req,res,next)=>
 {
     const _id = req.params.uid;
-    console.log(_id);
+    //console.log(_id);
 
     User.findOne({_id: _id}).select('-pass')
     .exec()
     .then(
        user => {
-            console.log(user);
+           // console.log(user);
             res.status(200).json({
                 status : true,
                 message : "Got the User!",
