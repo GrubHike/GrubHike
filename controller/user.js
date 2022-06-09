@@ -101,7 +101,7 @@ exports.signupController = async(req,res,next) => {
             });
             
             //Send the Mail Also for Verification after saving it to data base
-             console.log(user.email);
+             //console.log(user.email);
             const mailOptions = {
                 from : "Verify Your Account 📧! <"+process.env.EMAIL_ADDD+">",
                 to :  user.email,
@@ -151,7 +151,7 @@ exports.signupController = async(req,res,next) => {
 exports.mailVerify = async(req,res)=>{
     try
     {
-        console.log(token);
+        //console.log(token);
         const token = req.query.token
         const user = await User.findOne({ emailToken : token})
         
@@ -160,8 +160,34 @@ exports.mailVerify = async(req,res)=>{
             user.emailToken=null,
             user.isVerified=true,
             await user.save()
-
-            res.sendFile('../view/auth/mail-verify-1.html');
+            
+            const mailOptions = {
+                from : "Verification Done ✅! <"+process.env.EMAIL_ADDD+">",
+                to :  user.email,
+                subject: 'GrubHike - Mail Verification✌',
+                html: `<h2> ${user.firstName} 😎, Mail Verified!</h2>
+                      <h4> Let's Book Your First Slot with 50% off.</h4>
+                      <h4>Tap Here 👉  <a href="https://grubhike.com">Enjoy Your Meetup🚀</a>
+                      <h5> Thank You 😁 </h5>`,
+            }
+            //LETS SEND the Mail
+            transporter.sendMail(mailOptions,function(err,info){
+                if(err)
+                {
+                    //console.log(err);
+                    // res.status(500).json({
+                    //     status: false,
+                    //     message: "Some Problem with your mail",
+                    //     mailSent: false
+                    // })
+                    res.sendFile('../view/auth/mail-verify-1.html');
+                }
+                else
+                {
+                    res.sendFile('../view/auth/mail-verify-1.html');
+                }})
+                       
+            
         }
         else
         {
