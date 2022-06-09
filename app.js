@@ -9,7 +9,7 @@ const mongoose=require('mongoose');
 require('dotenv').config({path : './.env'})
 
 //Routes
-const userRoutes = require('./api/routes/user');
+const userRoutes = require('./routes/user');
 
 //Makking Data Base Connection Also
 mongoose.connect('mongodb+srv://testuser:'+process.env.MONGO_ATLAS_PASS+'@cluster0.xn4zx.mongodb.net/?retryWrites=true&w=majority').
@@ -23,6 +23,8 @@ app.use(morgan('dev'));
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
+
+
 //Resolving Cors Error 
 app.get((req,res,next)=>{
     //Here, we set the Header Mannually

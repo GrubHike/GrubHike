@@ -6,7 +6,11 @@ const fs = require('fs');
 //Importing Controllers
 const userController = require('../controller/user');
 
+//Env Vars
 require('dotenv').config({path : './.env'})
+
+//Middleware for is that user is verified by the mail or not
+const isVerified = require('../middleware/verifyMail');
 
 //Importing the middleware for the token authentication
 const checkToken = require('../middleware/checkAuth');
@@ -36,9 +40,12 @@ router.get('/image/:key',checkToken,userController.viewProfilePic);
     
 
 //LogIN
-router.post('/login',userController.login);
+router.post('/login',isVerified,userController.login);
 
 //Get the UserDetail
 router.get('/:uid',checkToken,userController.getUserDetail);
+
+//Mail Verification
+router.get('/verify-mail',userController.mailVerify);
 
 module.exports = router;

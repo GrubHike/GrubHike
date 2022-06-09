@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+const nodemailer =  require('nodemailer');
+const crypto = require('crypto');
 
 //Now importing these so that we can able to delete the unnecssary data from the server
 const util = require('util');
@@ -30,10 +32,22 @@ async function uploadToS3(file,res)
     }
 } 
 
+//For Mail Server Setup
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth:{
+        user: process.env.EMAIL_ADDD,
+        pass: process.env.EMAIL_PASSS
+    },
+    tls:{
+        rejectUnauthorized: false
+    }
+})
 
 
 exports.signupController = async(req,res,next) => {
     //First Validating Uniquness According To --> Username, email ,phonenum
+
     const email = req.body.email;
     const phoneNum = req.body.phoneNum;
     let error;
@@ -42,8 +56,8 @@ exports.signupController = async(req,res,next) => {
         const phoneNumExists = await User.findOne({ phoneNum });
         
         if(emailExists && phoneNumExists) {
-            error = "Username and email already exists";
-            throw new Error("Username and email already exists");
+            error = "Email Or Phone Number already exists";
+            throw new Error("Email Or Phone Number already exists");
         }else if(emailExists) {
             error = "Email already exists";
             throw new Error("Email already exists");
@@ -82,22 +96,82 @@ exports.signupController = async(req,res,next) => {
                phoneNum : phoneNum,
                email : email,
                pass : hash,
+               emailToken : crypto.randomBytes(64).toString('hex'),
+               isVerified: false
             });
-    
+            
+            //Send the Mail Also for Verification after saving it to data base
+             console.log(user.email);
+            const mailOptions = {
+                from : "Verify Your Account 📧! <"+process.env.EMAIL_ADDD+">",
+                to :  user.email,
+                subject: 'GrubHike - Mail Verification✌',
+                html: `<h2> ${user.firstName} 😎, Thanks for signup!</h2>
+                      <h4> Now, Time for verifying your mail🔑 ....</h4>
+                      <h4>Tap Here 👉  <a href="http://${req.headers.host}/guest/verify-mail?token=${user.emailToken}">Verify🚀</a>
+                      <h5> Thank You 😁 </h5>
+                      <p> Note📝‼ You Have 5 Days to Verify it Either Your Account Will be Suspended 🚮 </p>`,
+            }
+            //LETS SEND the Mail
+            transporter.sendMail(mailOptions,function(err,info){
+                if(err)
+                {
+                    //console.log(err);
+                    res.status(500).json({
+                        status: false,
+                        message: "Some Problem with your mail",
+                        mailSent: false
+                    })
+                }
+                else
+                {
+                    user.save().then( result => {
 
-            user.save().then( result => {
-               //console.log(result); 
-               res.status(201).json({
-                    status: true,
-                    message : "user created 🎉🎉",
-    })}).catch(err => {
-        res.status(500).json({
-            status : false,
-            message : "Some Error Caused",
-            error : err
-        })
-    })
-}})
+                        //console.log(result); 
+                        res.status(201).json({
+                             status: true,
+                             message : "user created 🎉🎉",
+                             mailSent : true
+             })
+         
+         }).catch(err => {
+                 res.status(500).json({
+                     status : false,
+                     message : "Some Error Caused",
+                     error : err
+                 })
+             })
+                }
+            })
+
+            
+}})}
+
+//For Mail Verification
+exports.mailVerify = async(req,res)=>{
+    try
+    {
+        console.log(token);
+        const token = req.query.token
+        const user = await User.findOne({ emailToken : token})
+        
+        if(user)
+        {
+            user.emailToken=null,
+            user.isVerified=true,
+            await user.save()
+
+            res.sendFile('../view/auth/mail-verify-1.html');
+        }
+        else
+        {
+            res.sendFile('../view/error/mail-not-verify-0.html')
+        }
+    }
+    catch(err)
+    {
+       res.sendFile('../view/error/no-access.html')
+    }
 }
 
 exports.login = (req,res,next)=>{
