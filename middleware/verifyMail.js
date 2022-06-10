@@ -7,6 +7,13 @@ module.exports = async(req,res,next)=>{
         {
             next()
         }
+        // else if(!user)
+        // {
+        //     res.status(400).json({
+        //         status: false,
+        //         message: "Please Check Email or Password!"
+        //     })
+        // }
         else
         {
             res.status(400).json({
@@ -17,9 +24,13 @@ module.exports = async(req,res,next)=>{
     }
     catch(err)
     {
-        res.status(500).json({
+        res.status(400).json({
             status: false,
-            message: "Some Intername Error"
+            message: "Please Check Email or Password!"
         })
+        // res.status(500).json({
+        //     status: false,
+        //     message: "Some Internal Error Caused!"
+        // })
     }
 }

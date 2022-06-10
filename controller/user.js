@@ -4,6 +4,19 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const nodemailer =  require('nodemailer');
 const crypto = require('crypto');
+const path = require('path')
+const hbs = require('nodemailer-express-handlebars')
+
+//For managing the views for email verification
+const handlebarOptions = {
+    viewEngine : 
+    {
+        partialsDir: path.resolve(path.join(__dirname,'..','/view/')),
+        defaultLayout: false
+    },
+    viewPath :  path.resolve(path.join(__dirname,'..','/view/'))
+
+}
 
 //Now importing these so that we can able to delete the unnecssary data from the server
 const util = require('util');
@@ -44,9 +57,12 @@ const transporter = nodemailer.createTransport({
     }
 })
 
+// use a template file with nodemailer
+transporter.use('compile', hbs(handlebarOptions))
 
 exports.signupController = async(req,res,next) => {
     //First Validating Uniquness According To --> Username, email ,phonenum
+    //console.log(__dirname);
 
     const email = req.body.email;
     const phoneNum = req.body.phoneNum;
@@ -106,11 +122,12 @@ exports.signupController = async(req,res,next) => {
                 from : "Verify Your Account 📧! <"+process.env.EMAIL_ADDD+">",
                 to :  user.email,
                 subject: 'GrubHike - Mail Verification✌',
-                html: `<h2> ${user.firstName} 😎, Thanks for signup!</h2>
-                      <h4> Now, Time for verifying your mail🔑 ....</h4>
-                      <h4>Tap Here 👉  <a href="http://${req.headers.host}/guest/verify-mail?token=${user.emailToken}">Verify🚀</a>
-                      <h5> Thank You 😁 </h5>
-                      <p> Note📝‼ You Have 5 Days to Verify it Either Your Account Will be Suspended 🚮 </p>`,
+                template: 'mail/email-verify',
+                context:{
+                    firstName: user.firstName,
+                    host : req.headers.host,
+                    emailToken : user.emailToken
+                }
             }
             //LETS SEND the Mail
             transporter.sendMail(mailOptions,function(err,info){
@@ -131,7 +148,8 @@ exports.signupController = async(req,res,next) => {
                         res.status(201).json({
                              status: true,
                              message : "user created 🎉🎉",
-                             mailSent : true
+                             mailSent : true,
+                             mailInfo : info
              })
          
          }).catch(err => {
@@ -151,9 +169,9 @@ exports.signupController = async(req,res,next) => {
 exports.mailVerify = async(req,res)=>{
     try
     {
-        //console.log(token);
         const token = req.query.token
         const user = await User.findOne({ emailToken : token})
+        //console.log(user);
         
         if(user)
         {
@@ -165,10 +183,10 @@ exports.mailVerify = async(req,res)=>{
                 from : "Verification Done ✅! <"+process.env.EMAIL_ADDD+">",
                 to :  user.email,
                 subject: 'GrubHike - Mail Verification✌',
-                html: `<h2> ${user.firstName} 😎, Mail Verified!</h2>
-                      <h4> Let's Book Your First Slot with 50% off.</h4>
-                      <h4>Tap Here 👉  <a href="https://grubhike.com">Enjoy Your Meetup🚀</a>
-                      <h5> Thank You 😁 </h5>`,
+                template: 'mail/email-verified',
+                context:{
+                    firstName: user.firstName,
+                }
             }
             //LETS SEND the Mail
             transporter.sendMail(mailOptions,function(err,info){
@@ -180,23 +198,28 @@ exports.mailVerify = async(req,res)=>{
                     //     message: "Some Problem with your mail",
                     //     mailSent: false
                     // })
-                    res.sendFile('../view/auth/mail-verify-1.html');
+                    let page = path.join(__dirname,'..','/view/auth/mail-verify-1.html')
+                    res.status(500).sendFile(page);
                 }
                 else
                 {
-                    res.sendFile('../view/auth/mail-verify-1.html');
+                   // console.log(info)
+                    let page = path.join(__dirname,'..','/view/auth/mail-verify-1.html')
+                    res.status(200).sendFile(page);
                 }})
                        
             
         }
         else
         {
-            res.sendFile('../view/error/mail-not-verify-0.html')
+            let page = path.join(__dirname,'..','/view/error/mail-not-verify-0.html')
+            res.status(400).sendFile(page)
         }
     }
     catch(err)
     {
-       res.sendFile('../view/error/no-access.html')
+        let page = path.join(__dirname,'..','/view/error/no-access.html')
+       res.sendFile(page)
     }
 }
 
@@ -206,7 +229,8 @@ exports.login = (req,res,next)=>{
     .then(user=>{
         if(user.length<1){
             return res.status(401).json({
-                message: 'Authentication Failed! At length'
+                status : false,
+                message: 'Please Check Email or Password!'
             })
         }
         //if everything perfect
@@ -214,7 +238,8 @@ exports.login = (req,res,next)=>{
             if(err)
             {
                 return res.status(401).json({
-                    message: 'Authentication Failed! At pass'
+                    status : false,
+                    message: 'Please Check Email or Password!'
                 })
             }
             if(result)
@@ -239,8 +264,9 @@ exports.login = (req,res,next)=>{
                     token : token
                 })
             }
-            return res.status(401).json({
-                message: 'Authentication Failed! At Nothing'
+            return res.status(500).json({
+                status: false,
+                message: 'Internal Error'
             })
         })
 

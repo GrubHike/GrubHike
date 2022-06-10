@@ -45,7 +45,4 @@ router.post('/login',isVerified,userController.login);
 //Get the UserDetail
 router.get('/:uid',checkToken,userController.getUserDetail);
 
-//Mail Verification
-router.get('/verify-mail',userController.mailVerify);
-
 module.exports = router;

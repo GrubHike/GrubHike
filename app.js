@@ -6,10 +6,12 @@ const bodyParser =require('body-parser');
 const morgan=require('morgan');
 const mongoose=require('mongoose');
 
+
 require('dotenv').config({path : './.env'})
 
 //Routes
 const userRoutes = require('./routes/user');
+const verifyUser=require('./routes/verify-guest')
 
 //Makking Data Base Connection Also
 mongoose.connect('mongodb+srv://testuser:'+process.env.MONGO_ATLAS_PASS+'@cluster0.xn4zx.mongodb.net/?retryWrites=true&w=majority').
@@ -18,6 +20,7 @@ then(result=>{
 }).catch(err=>{
     console.log(err,"Not Able To Connect!🛑");
 })
+
 
 app.use(morgan('dev'));
 
@@ -45,6 +48,7 @@ app.get('/',(req,res,next)=>{
     })});
 
 app.use('/guest',userRoutes);
+app.use('/verify-guest',verifyUser)
 
 app.use((req, res, next) => {
     const error = new Error('Not found');
