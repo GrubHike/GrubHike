@@ -130,37 +130,47 @@ exports.signupController = async(req,res,next) => {
                 }
             }
             //LETS SEND the Mail
+            // Promise.all([ transporter.sendMail(mailOptions),user.save()])
+            // .then(result =>{
+            //     res.status(201).json({
+            //                              status: true,
+            //                              message : "user created 🎉🎉",
+            //                              mailSent : true,
+            //                              mailInfo : result
+            //              })
+            // }).catch(err=>{
+            //          res.status(500).json({status : false,
+            //          message : "Some Error Caused",
+            //          error : err})
+            // })
+            
             transporter.sendMail(mailOptions,function(err,info){
                 if(err)
                 {
-                    //console.log(err);
-                    res.status(500).json({
-                        status: false,
-                        message: "Some Problem with your mail",
-                        mailSent: false
-                    })
+                    console.error(err);
                 }
                 else
                 {
-                    user.save().then( result => {
-
-                        //console.log(result); 
-                        res.status(201).json({
-                             status: true,
-                             message : "user created 🎉🎉",
-                             mailSent : true,
-                             mailInfo : info
-             })
-         
-         }).catch(err => {
-                 res.status(500).json({
-                     status : false,
-                     message : "Some Error Caused",
-                     error : err
-                 })
-             })
+                    console.info(info)
                 }
             })
+
+            user.save().then(result => {
+ 
+                //console.log(result); 
+                res.status(201).json({
+                     status: true,
+                     message : "user created 🎉🎉",
+                     mailSent : true
+     })
+ 
+ }).catch(err => {
+         res.status(500).json({
+             status : false,
+             message : "Some Error Caused",
+             error : err
+         })
+     })
 
             
 }})}
@@ -218,8 +228,9 @@ exports.mailVerify = async(req,res)=>{
     }
     catch(err)
     {
+        console.log(err);
         let page = path.join(__dirname,'..','/view/error/no-access.html')
-       res.sendFile(page)
+       res.status(500).sendFile(page)
     }
 }
 
@@ -306,80 +317,71 @@ exports.getUserDetail = (req,res,next)=>
 
 }
 
+exports.updateProfilePic = async(req,res,next)=>{
+    const id = req.params.userId;
+//Checking That User Wants to Upload the Pic or Not
+const user = await User.findOne({_id:id});
+if(req.file && user)
+{
+//Then if yes then upload to s3
+   uploadToS3(req.file,res)
+.then(data=>{   
+   //Now finding the complete detail of particular user by the given id and also updating with new fields
+   User.findOneAndUpdate({_id:id},{
+       $set : {
+          profilePicInfo : { "fileKey" :  data.key,"fileLocation" : data.Location,"bucketName" : data.Bucket },
+       }
+   }).exec().then(result=>{
+       //Once the after the Successfully done with uploads we also need to delete the uploa
+       //dir from the server becox its taking uncessary space
+       unlinkFile(req.file.path,function(err,info){
+        if(err) console.error(err)
+       })
+           //If Updated Successfully then trying to get new updated data
+                res.status(200).json({
+                    status: true,
+                    message : "User Profile Pic Updated!",
+                    data : user
+                })}
+           
+       )
+       .catch(err => {
+       res.status(400).json({
+           status : false,
+           message : "Might be User Is Not Present! Or You Have Not Given Complete Info",
+           error : err
+       })
+   })
+
+}).catch(
+   err=>{
+       res.status(500).json({
+           status : false,
+           message : "Not Able to Upload the Profile Pic!",
+           errr : err
+       })
+   });
+
+}
+else
+{
+    res.status(400).json({
+        status : false,
+        message : "Not Given The Data!,Either Your Given Info is Incorrect",
+    })
+}
+
+}
+
 exports.updateInfo = async (req,res,next) => {
     //console.log(req.file); 
 
      const id = req.params.userId;
      //console.log(id);
+     const user = await User.findOne({_id:id}).select("-pass");
     
-     //Checking That User Wants to Upload the Pic or Not
-     if(req.file)
+     if(user)
      {
- //Then if yes then upload to s3
-        uploadToS3(req.file,res)
-    .then(data=>{   
-        //Now finding the complete detail of particular user by the given id and also updating with new fields
-        User.findOneAndUpdate({_id:id},{
-            $set : {
-               hobbies : JSON.parse(req.body.hobbies),
-               socialHandles : JSON.parse(req.body.socialHandles),
-               profilePicInfo : { "fileKey" :  data.key,"fileLocation" : data.Location,"bucketName" : data.Bucket },
-               desc : req.body.desc,
-               address : JSON.parse(req.body.address),
-
-            }
-        }).exec().then(
-            //Once the after the Successfully done with uploads we also need to delete the uploa
-            //dir from the server becox its taking uncessary space
-            unlinkFile(req.file.path).then(
-                
-                //If Updated Successfully then trying to get new updated data
-            User.findOne({_id:id}).exec().then(
-                result=>{
-                    res.status(200).json({
-                        status: true,
-                        message : "User Profile Updated!",
-                        data : result
-                    })}
-            ).catch(err=>{
-                res.status(500).json(
-                    {
-                        status : false,
-                        message : "Some Error Caused During Fetching New Data",
-                        error : err
-                    }
-                )
-            })).catch(err=>{
-                res.status(500).json({
-                    status: false,
-                    message : "Error in unlinking the File From the Server!",
-                    error :  err
-                })
-            })
-
-
-            
-            
-        ).catch(err => {
-            res.status(400).json({
-                status : false,
-                message : "Might be User Is Not Present! Or You Have Not Given Complete Info",
-                error : err
-            })
-        })
-
-    }).catch(
-        err=>{
-            res.status(500).json({
-                status : false,
-                message : "Not Able to Upload the Profile Pic!",
-                errr : err
-            })
-        });
-
-     }
-
-     else{
         User.findOneAndUpdate({_id:id},{
             $set : {
                hobbies : JSON.parse(req.body.hobbies),
@@ -390,31 +392,29 @@ exports.updateInfo = async (req,res,next) => {
             }
         }).exec().then(
             //If Updated Successfully then trying to get new updated data
-            User.findOne({_id:id}).select("-pass").exec().then(
                 result=>{
                     res.status(200).json({
                         status: true,
                         message : "User Profile Updated!",
-                        data : result
+                        data : user
                     })}
-            ).catch(err=>{
-                res.status(500).json(
-                    {
-                        status : false,
-                        message : "Some Error Caused During Fetching New Data",
-                        error : err
-                    }
-                )
-            })
-            
-        ).catch(err => {
+            ).catch(err => {
             res.status(400).json({
                 status : false,
                 message : "Might be User Is Not Present! Or You Have Not Given Complete Info",
                 error : err
             })
         })
-     }}
+    }
+
+    else
+    {
+        res.status(400).json({
+            status : false,
+            message : "Not Given The Data!,Either Your Given Info is Incorrect",
+        })
+    }
+     }
 
 exports.viewProfilePic = (req,res)=>{
     const key= req.params.key;

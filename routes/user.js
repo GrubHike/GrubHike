@@ -33,11 +33,16 @@ const upload = multer({storage : storage});
 
 router.post('/signup', userController.signupController);
 
-router.put('/update/:userId', checkToken ,upload.single('profileImage'), userController.updateInfo);
+router.put('/update/:userId', checkToken , userController.updateInfo);
+
+//For Uploading Profile Pic
+router.put('/update/pic/:userId', checkToken ,upload.single('profileImage'), userController.updateProfilePic);
 
 //Lets Make an Get Request to get the image
 router.get('/image/:key',checkToken,userController.viewProfilePic);
     
+//Mail Verification
+router.get('/verify-mail',userController.mailVerify);
 
 //LogIN
 router.post('/login',isVerified,userController.login);

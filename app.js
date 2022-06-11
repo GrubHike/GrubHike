@@ -5,16 +5,17 @@ const bodyParser =require('body-parser');
 //for log management we need this lib
 const morgan=require('morgan');
 const mongoose=require('mongoose');
+const port = process.env.PORT || 3000;
 
 
 require('dotenv').config({path : './.env'})
 
 //Routes
 const userRoutes = require('./routes/user');
-const verifyUser=require('./routes/verify-guest')
+//const verifyUser=require('./routes/verify-guest')
 
 //Makking Data Base Connection Also
-mongoose.connect('mongodb+srv://testuser:'+process.env.MONGO_ATLAS_PASS+'@cluster0.xn4zx.mongodb.net/?retryWrites=true&w=majority').
+mongoose.connect(process.env.MONGO_URL).
 then(result=>{
     console.log("Connected With DataBase!💾");
 }).catch(err=>{
@@ -48,7 +49,7 @@ app.get('/',(req,res,next)=>{
     })});
 
 app.use('/guest',userRoutes);
-app.use('/verify-guest',verifyUser)
+// app.use('/verify-guest',verifyUser)
 
 app.use((req, res, next) => {
     const error = new Error('Not found');
@@ -65,4 +66,7 @@ app.use((error, req, res, next) => {
     });
 });
 
-module.exports = app;
+//module.exports = app;
+app.listen(port,()=>{
+    console.log("Server Started 👂 At "+port);
+})

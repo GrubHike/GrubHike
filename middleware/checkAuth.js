@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config({path : './.env'})
 
+// const checkAuth 
+
 module.exports = (req,res, next) => {
    try{
        //getting the token in header as you know this concept also used with get request
@@ -17,3 +19,4 @@ module.exports = (req,res, next) => {
        })
    }
 }
+// module.exports = checkAuth
