@@ -318,10 +318,10 @@ exports.getUserDetail = (req,res,next)=>
 }
 
 exports.updateProfilePic = async(req,res,next)=>{
-    const id = req.params.userId;
+
+const id = req.params.userId;
 //Checking That User Wants to Upload the Pic or Not
-const user = await User.findOne({_id:id});
-if(req.file && user)
+if(req.file)
 {
 //Then if yes then upload to s3
    uploadToS3(req.file,res)
@@ -338,13 +338,22 @@ if(req.file && user)
         if(err) console.error(err)
        })
            //If Updated Successfully then trying to get new updated data
+           User.findOne({_id:id}).exec().then(
+            result=>{
                 res.status(200).json({
                     status: true,
                     message : "User Profile Pic Updated!",
-                    data : user
+                    data : result
                 })}
-           
-       )
+        ).catch(err=>{
+            res.status(500).json(
+                {
+                    status : false,
+                    message : "Some Error Caused During Fetching New Data",
+                    error : err
+                }
+            )
+        })})
        .catch(err => {
        res.status(400).json({
            status : false,
@@ -352,7 +361,6 @@ if(req.file && user)
            error : err
        })
    })
-
 }).catch(
    err=>{
        res.status(500).json({
@@ -361,7 +369,6 @@ if(req.file && user)
            errr : err
        })
    });
-
 }
 else
 {
@@ -370,51 +377,51 @@ else
         message : "Not Given The Data!,Either Your Given Info is Incorrect",
     })
 }
-
 }
 
+
 exports.updateInfo = async (req,res,next) => {
-    //console.log(req.file); 
+    //console.log(req.file);
 
      const id = req.params.userId;
      //console.log(id);
-     const user = await User.findOne({_id:id}).select("-pass");
-    
-     if(user)
-     {
         User.findOneAndUpdate({_id:id},{
             $set : {
-               hobbies : JSON.parse(req.body.hobbies),
-               socialHandles : JSON.parse(req.body.socialHandles),
+               hobbies : req.body.hobbies,
+               socialHandles :req.body.socialHandles,
                desc : req.body.desc,
-               address : JSON.parse(req.body.address),
-
+               address :req.body.address
             }
         }).exec().then(
             //If Updated Successfully then trying to get new updated data
                 result=>{
-                    res.status(200).json({
-                        status: true,
-                        message : "User Profile Updated!",
-                        data : user
-                    })}
-            ).catch(err => {
+
+                        User.findOne({_id:id}).select("-pass").exec().then(
+            result=>{
+                res.status(200).json({
+                    status: true,
+                    message : "User Profile Pic Updated!",
+                    data : result
+                })}
+        ).catch(err=>{
+            res.status(500).json(
+                {
+                    status : false,
+                    message : "Some Error Caused During Fetching New Data",
+                    error : err
+                }
+            )
+        })
+                    })
+            .catch(err => {
             res.status(400).json({
                 status : false,
                 message : "Might be User Is Not Present! Or You Have Not Given Complete Info",
                 error : err
             })
         })
-    }
-
-    else
-    {
-        res.status(400).json({
-            status : false,
-            message : "Not Given The Data!,Either Your Given Info is Incorrect",
-        })
-    }
      }
+
 
 exports.viewProfilePic = (req,res)=>{
     const key= req.params.key;
