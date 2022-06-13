@@ -63,7 +63,9 @@ transporter.use('compile', hbs(handlebarOptions))
 exports.signupController = async(req,res,next) => {
     //First Validating Uniquness According To --> Username, email ,phonenum
     //console.log(__dirname);
-
+    if(req.body.email && req.body.phoneNum && req.body.dob && req.body.firstName && req.body.lastName && req.body.gender)
+    {
+    
     const email = req.body.email;
     const phoneNum = req.body.phoneNum;
     let error;
@@ -173,10 +175,21 @@ exports.signupController = async(req,res,next) => {
      })
 
             
-}})}
+}})
+    }
+    else
+    {
+        res.status(400).json({
+            status : false,
+            message : "Not Given the Complete Data"
+        })
+    }
+}
 
 //For Mail Verification
 exports.mailVerify = async(req,res)=>{
+    if(req.query.token)
+    {
     try
     {
         const token = req.query.token
@@ -233,8 +246,18 @@ exports.mailVerify = async(req,res)=>{
        res.status(500).sendFile(page)
     }
 }
+else
+{
+    res.status(400).json({
+        status : false,
+        message : "Token is Missing"
+    })
+}
+}
 
 exports.login = (req,res,next)=>{
+    if(req.body.mail && req.body.password)
+    {
     User.find({email: req.body.email})
     .exec()
     .then(user=>{
@@ -289,13 +312,21 @@ exports.login = (req,res,next)=>{
             })
         }
     )
+    }
+    else
+    {
+        res.status(400).json({
+            status : false,
+            message : "Not Given the Complete Data"
+        })
+    }
 }
 
 exports.getUserDetail = (req,res,next)=>
 {
     const _id = req.params.uid;
     //console.log(_id);
-
+    if(_id){
     User.findOne({_id: _id}).select('-pass')
     .exec()
     .then(
@@ -314,6 +345,14 @@ exports.getUserDetail = (req,res,next)=>
                     error : err
     })
 })
+    }
+    else
+    {
+        res.status(400).json({
+            status : false,
+            message : "Not Given the Complete Data"
+        })
+    }
 
 }
 
@@ -382,7 +421,8 @@ else
 
 exports.updateInfo = async (req,res,next) => {
     //console.log(req.file);
-
+    if(req.params.userId && req.body.hobbies && req.body.socialHandles && req.body.desc && req.body.address)
+    {
      const id = req.params.userId;
      //console.log(id);
         User.findOneAndUpdate({_id:id},{
@@ -421,11 +461,24 @@ exports.updateInfo = async (req,res,next) => {
             })
         })
      }
+     else
+     {
+        res.status(400).json({
+            status : false,
+            message : "Not Given the Complete Data"
+        })
+     }
+    }
 
 
 exports.viewProfilePic = (req,res)=>{
     const key= req.params.key;
     const readStream = getFileStream(key);
-
-    readStream.pipe(res);
+    if(key) readStream.pipe(res);
+    else
+    { res.status(400).json({
+        status : false,
+        message : "Not Given the Complete Data"
+    })
+}
 }

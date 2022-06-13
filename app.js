@@ -30,17 +30,18 @@ app.use(bodyParser.json());
 
 
 //Resolving Cors Error 
-app.get((req,res,next)=>{
+app.use((req,res,next)=>{
     //Here, we set the Header Mannually
-    res.header('Access-Control-Allow-Origin','*') //Here, We can specify the Specific endpoint
-    res.header('Access-Control-Allow-Headers','Origin,X-Requested-With,Content-Type,Accept,Authorixation');
-
-    if(req.method==='OPTIONS')
-    {
-        res.header('Access-Control-Allow-Methods','PUT,POST,PATCH,DELETE,GET');
-        return res.status(200).json({});
-    }
-    next();
+    res.header("Access-Control-Allow-Origin", "*"); //Here, We can specify the Specific endpoint
+   res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
+    return res.status(200).json({});
+  }
+  next();
 })
 
 app.get('/',(req,res,next)=>{
