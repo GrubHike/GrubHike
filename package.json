@@ -1,19 +1,20 @@
 {
-  "name": "host-api",
+  "name": "guest-signup-auth-api",
   "version": "1.0.0",
-  "description": "This API for the Host Management Part.",
+  "description": "By the help of this API we can able to create the Guest Account and Authenticate",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Hello World\""
+    "test": "echo \"Hello World!\"",
+    "start": "nodemon app.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Shashwatsingh22/GrubHike.git"
   },
   "keywords": [
-    "Host",
-    "ExpressJS",
-    "API"
+    "mongodb",
+    "signup",
+    "signin"
   ],
   "author": "Shashwat Singh",
   "license": "ISC",
@@ -25,9 +26,18 @@
     "nodemon": "^2.0.16"
   },
   "dependencies": {
+    "aws-sdk": "^2.1145.0",
+    "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "express-handlebars": "^6.0.6",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.3.4",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1"
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.7.5",
+    "nodemailer-express-handlebars": "^5.0.0"
   }
 }
