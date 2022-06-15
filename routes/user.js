@@ -15,8 +15,11 @@ const isVerified = require('../middleware/verifyMail');
 //Importing the middleware for the token authentication
 const checkToken = require('../middleware/checkAuth');
 
-//Middleware fir userCheck
+//Middleware for userCheck
 const checkUser = require('../middleware/checkUser');
+
+//Middleware for Pic Exists in UserDB or not
+const picExist = require('../middleware/picExist');
 
 const storage = multer.diskStorage({
     destination: function(req,file,cb){
@@ -41,7 +44,7 @@ router.put('/update/:userId',checkToken,checkUser, userController.updateInfo);
 router.put('/update/pic/:userId',checkToken,checkUser,upload.single('profileImage'), userController.updateProfilePic);
 
 //Lets Make an Get Request to get the image
-router.get('/image/:key',checkToken,userController.viewProfilePic);
+router.get('/image/:uid/:key',picExist,checkToken,userController.viewProfilePic);
     
 //Mail Verification
 router.get('/verify-mail',userController.mailVerify);

@@ -26,7 +26,7 @@ const unlinkFile = util.promisify(fs.unlinkSync);
 const { uploadFile,getFileStream } = require('../functions/s3');
 
 //Importing the Model of the User
-const User = require('../models/user');
+const User = require('../models/guest');
 
 //Function for Uploading data to the S3 bucket
 async function uploadToS3(file,res)
