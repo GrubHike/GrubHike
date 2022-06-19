@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const hostKitchenSchema = mongoose.Schema({
     _id : mongoose.Schema.Types.ObjectId,
@@ -11,7 +12,7 @@ const hostKitchenSchema = mongoose.Schema({
 
     kitchenName : {
         type :  String, 
-        required: true
+        required: false
     },
 
     webSite : {
@@ -31,9 +32,9 @@ const hostKitchenSchema = mongoose.Schema({
         required: false
     },
 
-    profilePicInfo : { 
-        type : Map, 
-        of : String, 
+    picsInfo : { 
+        type : Array, 
+        of : Map, 
         required: false
     },
 

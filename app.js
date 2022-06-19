@@ -14,7 +14,7 @@ const port = process.env.PORT || 8000;
 
 //Routes
 const userRoutes = require('./routes/user');
-
+const kitchenRoutes = require('./routes/kitchen');
 
 //Makking Data Base Connection Also
 mongoose.connect(process.env.MONGO_URL).
@@ -52,6 +52,8 @@ app.get('/',(req,res,next)=>{
     })});
 
 app.use('/host',userRoutes);
+
+app.use('/kitchen',kitchenRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Not found');
