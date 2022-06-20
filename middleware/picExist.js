@@ -2,7 +2,7 @@ const User = require('../models/host')
 
 const checkUser = async(req,res,next)=>{
     try{
-        const user = await User.findOne({ _id : req.params.userId });
+        const user = await User.findOne({ _id : req.params.uid });
         //console.log("this => ",user.profilePicInfo.get('fileKey'));
 
         if(user.profilePicInfo.get('fileKey')===req.params.key)

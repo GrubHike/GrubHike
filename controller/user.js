@@ -368,7 +368,7 @@ exports.getUserDetail = (req,res,next)=>
 
 exports.updateProfilePic = async(req,res,next)=>{
 
-const id = req.params.userId;
+const id = req.params.uid;
 //Checking That User Wants to Upload the Pic or Not
 if(req.file)
 {
@@ -431,9 +431,9 @@ else
 
 exports.updateInfo = async (req,res,next) => {
     //console.log(req.file);
-    if(req.body.state && req.body.cityOrVillage && req.params.userId && req.body.hobbies && req.body.socialHandles && req.body.desc && req.body.address)
+    if(req.body.state && req.body.cityOrVillage && req.params.uid && req.body.hobbies && req.body.socialHandles && req.body.desc && req.body.address)
     {
-     const id = req.params.userId;
+     const id = req.params.uid;
      //console.log(id);
         User.findOneAndUpdate({_id:id},{
             $set : {
