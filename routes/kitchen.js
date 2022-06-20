@@ -5,6 +5,7 @@ const fs = require('fs');
 
 //Importing Controllers
 const kitchenController = require('../controller/kitchen');
+const utils = require('../controller/utils')
 
 //Middleware for is that user is verified by the mail or not
 const kitchenPicExist = require('../middleware/kitchenPics');
@@ -34,7 +35,7 @@ router.put('/edit/:uid',checkToken,checkUser,kitchenController.edit);
 
 router.put('/pic/:uid',checkToken,checkUser,upload.array('kitchenPic',3),kitchenController.uploadPics);
 
-router.get('/pic/:uid/:fileKey',checkToken,kitchenPicExist,kitchenController.viewPics);
+router.get('/pic/:uid/:fileKey',checkToken,kitchenPicExist,utils.viewPics);
 
 router.get('/:uid',checkToken,checkUser,kitchenController.getDetail);
 

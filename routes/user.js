@@ -5,6 +5,7 @@ const fs = require('fs');
 
 //Importing Controllers
 const userController = require('../controller/user');
+const utils = require('../controller/utils')
 
 //Env Vars
 require('dotenv').config({path : './.env'})
@@ -42,7 +43,7 @@ router.put('/update/:uid',checkToken,checkUser, userController.updateInfo);
 router.put('/update/pic/:uid',checkToken,checkUser,upload.single('profileImage'), userController.updateProfilePic);
 
 //Lets Make an Get Request to get the image
-router.get('/image/:uid/:key',picExist,checkToken,userController.viewProfilePic);
+router.get('/image/:uid/:key',picExist,checkToken,utils.viewPics);
     
 //Mail Verification
 router.get('/verify-mail',userController.mailVerify);

@@ -251,32 +251,12 @@ exports.uploadPics = async(req,res,next)=>{
     }
 }
 
-exports.viewPics = async(req,res,next)=>{
-    const key= req.params.fileKey;
-    if(key)
-    {
-        const readStream = getFileStream(key);
-        if(key) readStream.pipe(res);
-        else
-        { res.status(400).json({
-            status : false,
-            message : "Incorrect Data"
-        })}
-    }
-    else
-    {
-        res.status(400).json({
-            status : false,
-            message : "Not Given the Complete Data"})
-    }
-}
-
 exports.getDetail = (req,res,next) => {
     const uid = req.params.uid;
 
     hostKitchen.find(({hostId : uid})).exec().then(
         newData => {
-         if(newData.length < 0)
+         if(newData.length)
           {
            return res.status(201).json({
              status: true,
