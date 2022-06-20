@@ -270,3 +270,35 @@ exports.viewPics = async(req,res,next)=>{
             message : "Not Given the Complete Data"})
     }
 }
+
+exports.getDetail = (req,res,next) => {
+    const uid = req.params.uid;
+
+    hostKitchen.find(({hostId : uid})).exec().then(
+        newData => {
+         if(newData.length < 0)
+          {
+           return res.status(201).json({
+             status: true,
+             message : "Found the Kitchen Details 👨‍🍳",
+             newData : newData
+         })
+        }
+        else
+        {
+           return res.status(404).json({
+                status : false,
+                message : "User Not Designed the Kitchen Till Date!"
+            })
+        }
+        }    
+     )
+ .catch(err => {
+     res.status(500).json({
+         status : false,
+         message : "Some Error Caused 289!",
+         err : err
+     })
+ })
+
+}

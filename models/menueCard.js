@@ -12,34 +12,39 @@ const hostMenueCard = mongoose.Schema({
 
     cuisimeName : {
         type :  String, 
-        required: false
+        required: true
     },
 
     ingradients : {
         type : Array,
         of : String,
-        required : false
+        required : true
     },
 
     state : {
         type : String,
-        required : false
+        required : true
     },
 
     desc : { 
         type : String,
-        required: false
+        required: true
     },
 
     price : {
         type : String, 
-        required: false
+        required: true
     },
 
     picsInfo : { 
         type : Array, 
         of : Map, 
-        required: false
+        required: true
+    },
+
+    blongsTo : {
+        type : String,
+        required : true
     },
 
     createdAt:{
@@ -48,6 +53,7 @@ const hostMenueCard = mongoose.Schema({
     },
 
     type : {
+        //veg or non veg
         type : String,
         required : false
     }

@@ -36,4 +36,6 @@ router.put('/pic/:uid',checkToken,checkUser,upload.array('kitchenPic',3),kitchen
 
 router.get('/pic/:uid/:fileKey',checkToken,kitchenPicExist,kitchenController.viewPics);
 
+router.get('/:uid',checkToken,checkUser,kitchenController.getDetail);
+
 module.exports = router;
