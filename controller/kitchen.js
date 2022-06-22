@@ -58,7 +58,7 @@ exports.edit = (req,res,next)=>{
                 desc : desc,
                 socialHandles : socialHandles,
                 mealTime : mealTime,
-                kitchenType : kitchenType
+                type : kitchenType
             })
 
             newkitchen.save()
@@ -86,7 +86,7 @@ exports.edit = (req,res,next)=>{
                 webSite :  website,
                 socialHandles : socialHandles,
                 mealTime : mealTime,
-                kitchenType : kitchenType,
+                type : kitchenType,
                 desc : desc
             }
            }).exec().then(
