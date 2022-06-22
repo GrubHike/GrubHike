@@ -7,7 +7,7 @@ const util = require('util');
 const unlinkFile = util.promisify(fs.unlinkSync);
 
 //Importing the S3 functions
-const { uploadFile,getFileStream } = require('../functions/s3');
+const { uploadFile } = require('../functions/s3');
 
 //Importing the Model of the User
 const User = require('../models/host');
@@ -30,6 +30,7 @@ async function uploadToS3(file,res)
     }
 } 
 
+//unlinking the data from the server storage by giving the array of it
 const unlinkPics = (data) =>{
     for(let i=0;i<data.length;i++)
     {
@@ -61,17 +62,12 @@ exports.edit = (req,res,next)=>{
 
             newkitchen.save()
             .then(result => {
-
-                hostKitchen.find(({hostId : uid})).exec().then(
-                   newData => {
                     res.status(201).json({
                         status: true,
                         message : "Kitchen Details Updated 👨‍🍳",
-                        newData : newData
-                    })
-                   }    
+                        newData : result
+                    })}    
                 )
-            })
             .catch(err => {
                 res.status(500).json({
                     status : false,

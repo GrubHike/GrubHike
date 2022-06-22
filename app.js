@@ -9,12 +9,10 @@ const morgan=require('morgan');
 const mongoose=require('mongoose');
 const port = process.env.PORT || 8000;
 
-
-
-
 //Routes
 const userRoutes = require('./routes/user');
 const kitchenRoutes = require('./routes/kitchen');
+const menueCard = require('./routes/menueCard');
 
 //Makking Data Base Connection Also
 mongoose.connect(process.env.MONGO_URL).
@@ -29,7 +27,6 @@ app.use(morgan('dev'));
 
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
-
 
 //Resolving Cors Error 
 app.use((req,res,next)=>{
@@ -54,6 +51,8 @@ app.get('/',(req,res,next)=>{
 app.use('/host',userRoutes);
 
 app.use('/kitchen',kitchenRoutes);
+
+app.use('/menueCard',menueCard);
 
 app.use((req, res, next) => {
     const error = new Error('Not found');

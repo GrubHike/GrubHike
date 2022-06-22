@@ -1,3 +1,6 @@
+//For Getting the Data from the S3 bucket
+const { getFileStream } = require('../functions/s3');
+
 exports.viewPics = async(req,res,next)=>{
     const key= req.params.fileKey;
     if(key)

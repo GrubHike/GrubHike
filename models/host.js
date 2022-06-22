@@ -31,7 +31,7 @@ const userSchema = mongoose.Schema({
         required: false
     },
     hobbies : {
-        type: [],
+        type: Array,
         of: String,
         required: false
     },

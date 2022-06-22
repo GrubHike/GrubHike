@@ -10,7 +10,7 @@ const hostMenueCard = mongoose.Schema({
         required: true
     },
 
-    cuisimeName : {
+    cousineName : {
         type :  String, 
         required: true
     },
@@ -22,6 +22,7 @@ const hostMenueCard = mongoose.Schema({
     },
 
     state : {
+        //In which state this dish belongs to
         type : String,
         required : true
     },
@@ -32,17 +33,30 @@ const hostMenueCard = mongoose.Schema({
     },
 
     price : {
-        type : String, 
+        type : Number, 
         required: true
+    },
+
+    priceDesc : {
+        type : Map,
+        of : String,
+        required : true
     },
 
     picsInfo : { 
         type : Array, 
         of : Map, 
-        required: true
+        required: false
     },
 
-    blongsTo : {
+    belongsTo : {
+        //local or Non Local
+        type : String,
+        required : true
+    },
+
+    type : {
+        //veg or non veg
         type : String,
         required : true
     },
@@ -51,12 +65,6 @@ const hostMenueCard = mongoose.Schema({
         type: Date,
         default: Date.now()
     },
-
-    type : {
-        //veg or non veg
-        type : String,
-        required : false
-    }
 });
 
 module.exports = mongoose.model('hostMenueCard',hostMenueCard);
