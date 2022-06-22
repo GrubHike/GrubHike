@@ -54,7 +54,8 @@ exports.edit = (req,res,next)=>{
                 _id : new mongoose.Types.ObjectId(),
                 hostId : uid,
                 kitchenName : kitchenName,
-                website :  website,
+                webSite :  website,
+                desc : desc,
                 socialHandles : socialHandles,
                 mealTime : mealTime,
                 kitchenType : kitchenType
@@ -82,10 +83,11 @@ exports.edit = (req,res,next)=>{
            hostKitchen.findOneAndUpdate({hostId : uid},{
             $set : {
                 kitchenName : kitchenName,
-                website :  website,
+                webSite :  website,
                 socialHandles : socialHandles,
                 mealTime : mealTime,
-                kitchenType : kitchenType
+                kitchenType : kitchenType,
+                desc : desc
             }
            }).exec().then(
             result => {
