@@ -2,7 +2,7 @@
 const { getFileStream } = require('../functions/s3');
 
 exports.viewPics = async(req,res,next)=>{
-    const key= req.params.fileKey;
+    const key= req.params.key;
     if(key)
     {
         const readStream = getFileStream(key);

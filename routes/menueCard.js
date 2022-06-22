@@ -43,7 +43,7 @@ router.put('/edit/cousineDetails/:uid/:cid',checkToken,checkDish,menueCardContro
 
 router.delete('/delete/cousine/:uid/:cid',checkToken,checkDish,menueCardController.deleteCousine);
 
-router.get('/pic/:cid/:fileKey',checkToken,checkDishPic,utils.viewPics);
+router.get('/pic/:cid/:key',checkToken,checkDishPic,utils.viewPics);
 
 router.get('/get/:uid',checkToken,checkUser,menueCardController.getMenueCard);
 

@@ -481,24 +481,3 @@ exports.updateInfo = async (req,res,next) => {
         })
      }
     }
-
-
-exports.viewProfilePic = (req,res)=>{
-    const key= req.params.key;
-    if(key)
-    {
-        const readStream = getFileStream(key);
-        if(key) readStream.pipe(res);
-        else
-        { res.status(400).json({
-            status : false,
-            message : "Incorrect Data"
-        })}
-    }
-    else
-    {
-        res.status(400).json({
-            status : false,
-            message : "Not Given the Complete Data"})
-    }
-}
