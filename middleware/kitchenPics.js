@@ -8,7 +8,7 @@ const checkUser = async(req,res,next)=>{
         let flag=0;
         for(let i=0;i<kitchenData.picsInfo.length;i++)
         {
-         if(kitchenData.picsInfo[i].get('fileKey')===req.params.fileKey)
+         if(kitchenData.picsInfo[i].get('fileKey')===req.params.key)
          {
             flag=1;
             break;
