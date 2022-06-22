@@ -7,9 +7,6 @@ const fs = require('fs');
 const menueCardController = require('../controller/menueCard');
 const utils = require('../controller/utils')
 
-//Middleware for is that user is verified by the mail or not
-const menueCardPicExist = require('../middleware/kitchenPics');
-
 //Importing the middleware for the token authentication
 const checkToken = require('../middleware/checkAuth');
 
@@ -17,7 +14,10 @@ const checkToken = require('../middleware/checkAuth');
 const checkUser = require('../middleware/checkUser');
 
 //Middleware for dishCheck in MenueCard Present Or Not
-const checkDish = require('../middleware/menueCard/isDishPresent')
+const checkDish = require('../middleware/menueCard/isDishPresent');
+
+//Middleware for checking that dish pic is available or not
+const checkDishPic = require('../middleware/menueCard/dishPicExist');
 
 const storage = multer.diskStorage({
     destination: function(req,file,cb){
@@ -42,6 +42,8 @@ router.post('/add/cousinePics/:uid/:cid',checkToken,checkDish,upload.array('cous
 router.put('/edit/cousineDetails/:uid/:cid',checkToken,checkDish,menueCardController.editCousineDetails);
 
 router.delete('/delete/cousine/:uid/:cid',checkToken,checkDish,menueCardController.deleteCousine);
+
+router.get('/pic/:cid/:fileKey',checkToken,checkDishPic,utils.viewPics);
 
 router.get('/get/:uid',checkToken,checkUser,menueCardController.getMenueCard);
 
