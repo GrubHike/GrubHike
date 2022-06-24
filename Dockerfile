@@ -9,4 +9,4 @@
 # install npm dependencies
  RUN npm install
 # start an application (starting our react server)
- CMD ["node", "server.js"]
+ CMD ["node", "app.js"]
