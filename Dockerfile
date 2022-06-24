@@ -8,8 +8,5 @@
  COPY . .
 # install npm dependencies
  RUN npm install
-# lets build the application
- RUN npm run build
- 
- # # start an application (starting our react server)
- CMD ["npm", "run", "start"]
+# start an application (starting our react server)
+ CMD ["node", "server.js"]
