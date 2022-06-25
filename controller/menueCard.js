@@ -203,7 +203,7 @@ exports.getMenueCard = (req,res,next) => {
     menueCard.find({hostId:uid}).exec()
     .then(hostMenueCard => {
         //console.log(hostMenueCard);
-        if(hostMenueCard.length>1)
+        if(hostMenueCard.length>0)
        {
         res.status(200).json({
             status : true,
